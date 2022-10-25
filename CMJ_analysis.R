@@ -169,7 +169,8 @@ fi <- 1
 for (f in names(data)) {
   # # threshold = 5 SD of 1s weighing period before flight or smallest SD or 1s rolling window
   # th[fi] <- sd(data[[f]]$Total[1:(freq[[f]]*1)])*5
-  th[fi] <- min(movstd(data[[f]]$Total, (freq[[f]]*1)), na.rm = T)*5
+  # th[fi] <- min(movstd(data[[f]]$Total, (freq[[f]]*1)), na.rm = T)*5 # 1s rolling min
+  th[fi] <- min(movstd(data[[f]]$Total, (freq[[f]]*0.5)), na.rm = T)*5 # 0.5s rolling min
   
   # flight thresholds = 5N start, 20N end
   sft <- 5
@@ -187,15 +188,19 @@ for (f in names(data)) {
     # sj[fi] <- max(which(data[[f]]$Total[1:em] > (bodymass[[f]] - th[f]))) - (freq[[f]]*0.03)
     fi <- fi+1
   } else { # remove jump
-    th[fi] <- NULL
-    sj[fi] <- NULL
-    flight[fi,] <- NULL
-    data[[f]] <- NULL
-    fmaxi[[f]] <- NULL
-    freq[[f]] <- NULL
-    bodymass[[f]] <- NULL
-    
-    message(paste("Warning:", f, "does not contain a detectable countermovement and will not be processed further"))
+    if (length(names(data)) > 1) {
+      th[fi] <- NULL
+      sj[fi] <- NULL
+      flight[fi,] <- NULL
+      data[[f]] <- NULL
+      fmaxi[[f]] <- NULL
+      freq[[f]] <- NULL
+      bodymass[[f]] <- NULL
+      
+      message(paste("Warning:", f, "does not contain a detectable countermovement and will not be processed further"))
+    } else {
+      stop("Warning: this trial does not contain a detectable countermovement and will not be processed further")
+    }
   }
 }
 rm(fi,f,sft,eft,ep,em)

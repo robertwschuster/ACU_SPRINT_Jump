@@ -36,6 +36,11 @@ ui <- fluidPage(
                            "text/comma-separated-values,text/plain",
                            ".csv")),
       tags$hr(), # horizontal line
+      # length of period to determine CM threshold
+      sliderInput("thl", "Quiet standing period length [s]:",
+                  min = 0.1, max = 1,
+                  value = 0.5, step = 0.1),
+      tags$hr(), # horizontal line
       # Save filename
       textInput("fileName", "Enter the file name you want to save the results to:"),
       
@@ -66,7 +71,7 @@ server <- function(input, output) {
       for (i in 1:numfiles) {
         data <- importTrial(input$file[[i,'datapath']],input$file[[i,'name']],input$jumpType) # import and prepare trial
         data <- nReps(data) # check for multiple reps and cut trial accordingly
-        data <- flight(data) # determine start and end of flight and start of movement
+        data <- flight(data, input$thl) # determine start and end of flight and start of movement
         data <- qualityCheck(data)
         data <- perfMetrics(data) # calculate performance metrics
         
@@ -118,16 +123,18 @@ server <- function(input, output) {
   }
   
   output$repTabs <- renderUI({
-    fns <- input$file$name
-    fTabs <- lapply(1:length(fns), function(f) {
-      if (is.null(fns)) {
-        return(NULL)
-      } else {
-        fn <- basename(fns[f])
-        tabPanel(fn, repTabs(fn))
-      }
-    })
-    do.call(tabsetPanel, fTabs)
+    if (!is.null(input$file)) {
+      fns <- input$file$name
+      fTabs <- lapply(1:length(fns), function(f) {
+        if (is.null(fns)) {
+          return(NULL)
+        } else {
+          fn <- basename(fns[f])
+          tabPanel(fn, repTabs(fn))
+        }
+      })
+      do.call(tabsetPanel, fTabs)
+    }
   })
   
   # Save csv of performance metrics

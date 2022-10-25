@@ -127,7 +127,7 @@ nReps <- function(data) {
 
 
 # Determine start and end of flight ------------------------------------------------------
-flight <- function(data) {
+flight <- function(data,thl) {
   reps <- names(data)[which(grepl(data$fn,names(data)))]
   sj <- numeric(length(reps))
   flight <- matrix(0,length(reps),2)
@@ -136,7 +136,8 @@ flight <- function(data) {
     rn <- reps[r]
     # # threshold = 5 SD of 1s weighing period before flight or smallest SD or 1s rolling window
     # th <- sd(data[[rn]]$Total[1:(data$freq*1)])*5
-    th <- min(movstd(data[[rn]]$Total, (data$freq*1)), na.rm = T)*5
+    # th <- min(movstd(data[[rn]]$Total, (data$freq*1)), na.rm = T)*5
+    th <- min(movstd(data[[rn]]$Total, (data$freq*thl)), na.rm = T)*5
     
     # flight thresholds = 5N start, 20N end
     sft <- 5

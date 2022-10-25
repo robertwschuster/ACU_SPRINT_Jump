@@ -227,8 +227,6 @@ rm(f,sf,ef)
 
 
 # Extract performance metrics ------------------------------------------------------------
-# TODO: - max rate of force development across given window?
-
 # jump height
 FT <-  numeric(length(data))
 JH <-  matrix(0,length(data),3)

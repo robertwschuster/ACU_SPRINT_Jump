@@ -281,9 +281,7 @@ perfMetrics <- function(data) {
       pm[r,29] <- NA # bottom most position of countermovement
     }
   }
-  # data$pm <- round(pm[,1:29],2)
   data$pm <- round(pm,2)
-  # data$pm <- pm
   return(data)
 }
 

@@ -60,6 +60,8 @@ ui <- fluidPage(
 
 # Server logic ---------------------------------------------------------------------------
 server <- function(input, output) {
+  # remove default input file size restriction (increase to 30MB)
+  options(shiny.maxRequestSize = 30*1024^2)
   # Load files into workspace
   getData <- reactive({
     if (!is.null(input$file)) {

@@ -148,8 +148,8 @@ flight <- function(data, thl) {
     flight[r,2] <- max(which(data[[rn]]$Total[1:data$fmaxi[r]] < eft))
     
     # start of jump movement (sj) & start of concentric (sc)
-    ep <- which(data[[rn]]$Total[1:flight[r,1]] == max(data[[rn]]$Total[1:flight[r,1]]))
-    em <- which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep])) + (ep-data$freq*1)
+    ep <- min(which(data[[rn]]$Total[1:flight[r,1]] == max(data[[rn]]$Total[1:flight[r,1]])))
+    em <- min(which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep]))) + (ep-data$freq*1)
     if (data$jt == 'Countermovement jump') {
       if (any(data[[rn]]$Total[1:em] < (data$bodymass - th))) { # there is a countermovement
         sj[r] <- max(which(data[[rn]]$Total[1:em] > (data$bodymass - th)))
@@ -240,8 +240,8 @@ perfMetrics <- function(data) {
     # peak power index
     ppi <- which(p == max(p))
     # peak & min force indices
-    pfi <- which(data[[rn]]$Total[sj:data$flight[r,1]] == max(data[[rn]]$Total[sj:data$flight[r,1]])) + sj
-    mfi <- which(data[[rn]]$Total[sj:pfi] == min(data[[rn]]$Total[sj:pfi])) + sj
+    pfi <- min(which(data[[rn]]$Total[sj:data$flight[r,1]] == max(data[[rn]]$Total[sj:data$flight[r,1]]))) + sj
+    mfi <- min(which(data[[rn]]$Total[sj:pfi] == min(data[[rn]]$Total[sj:pfi]))) + sj
     
     pm[r,4] <- v[data$flight[r,1]-sj] # take-off velocity
     

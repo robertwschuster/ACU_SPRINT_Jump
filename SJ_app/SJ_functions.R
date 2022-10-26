@@ -147,7 +147,7 @@ flight <- function(data) {
     flight[r,2] <- max(which(data[[rn]]$Total[1:data$fmaxi[r]] < eft))
     
     # start of jump movement (sj) & start of concentric (sc)
-    ep <- which(data[[rn]]$Total[1:flight[r,1]] == max(data[[rn]]$Total[1:flight[r,1]]))
+    ep <- min(which(data[[rn]]$Total[1:flight[r,1]] == max(data[[rn]]$Total[1:flight[r,1]])))
     sj[r] <- max(which(data[[rn]]$Total[1:ep] < (data$bodymass + th)))
     # sj[r] <- max(which(data[[rn]]$Total[1:ep] < (data$bodymass + th))) - (data$freq*0.03)
   }
@@ -220,8 +220,8 @@ perfMetrics <- function(data) {
     # peak power index
     ppi <- which(p == max(p))
     # peak & min force indices
-    pfi <- which(data[[rn]]$Total[sj:data$flight[r,1]] == max(data[[rn]]$Total[sj:data$flight[r,1]])) + sj
-    mfi <- which(data[[rn]]$Total[sj:pfi] == min(data[[rn]]$Total[sj:pfi])) + sj
+    pfi <- min(which(data[[rn]]$Total[sj:data$flight[r,1]] == max(data[[rn]]$Total[sj:data$flight[r,1]]))) + sj
+    mfi <- min(which(data[[rn]]$Total[sj:pfi] == min(data[[rn]]$Total[sj:pfi]))) + sj
     
     pm[r,4] <- v[data$flight[r,1]-sj] # take-off velocity
     

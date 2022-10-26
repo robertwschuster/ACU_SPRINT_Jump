@@ -148,8 +148,8 @@ flight <- function(data,thl) {
     flight[r,2] <- max(which(data[[rn]]$Total[1:data$fmaxi[r]] < eft))
     
     # start of jump movement (sj) & start of concentric (sc)
-    ep <- which(data[[rn]]$Total[1:flight[r,1]] == max(data[[rn]]$Total[1:flight[r,1]]))
-    em <- which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep])) + (ep-data$freq*1)
+    ep <- min(which(data[[rn]]$Total[1:flight[r,1]] == max(data[[rn]]$Total[1:flight[r,1]])))
+    em <- min(which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep]))) + (ep-data$freq*1)
     if (any(data[[rn]]$Total[1:em] < (data$bodymass - th))) { # there is a countermovement
       sj[r] <- max(which(data[[rn]]$Total[1:em] > (data$bodymass - th)))
       # sj[r] <- max(which(data[[rn]]$Total[1:em] > (data$bodymass - th))) - (data$freq*0.03)
@@ -224,8 +224,8 @@ perfMetrics <- function(data) {
     # peak power index
     ppi <- which(p == max(p))
     # peak & min force indices
-    pfi <- which(data[[rn]]$Total[data$sj[r]:data$flight[r,1]] == max(data[[rn]]$Total[data$sj[r]:data$flight[r,1]])) + data$sj[r]
-    mfi <- which(data[[rn]]$Total[data$sj[r]:pfi] == min(data[[rn]]$Total[data$sj[r]:pfi])) + data$sj[r]
+    pfi <- min(which(data[[rn]]$Total[data$sj[r]:data$flight[r,1]] == max(data[[rn]]$Total[data$sj[r]:data$flight[r,1]]))) + data$sj[r]
+    mfi <- min(which(data[[rn]]$Total[data$sj[r]:pfi] == min(data[[rn]]$Total[data$sj[r]:pfi]))) + data$sj[r]
     
     pm[r,4] <- v[data$flight[r,1]-data$sj[r]] # take-off velocity
     
@@ -266,8 +266,9 @@ perfMetrics <- function(data) {
 
 # # Test functions on sample file ----------------------------------------------------------
 # data <- importTrial("C:/Users/s4548745/Desktop/ACU/Jump/CMJ/Aimee Morabito-Countermovement Jump-2022.06.16-11.04.27.csv","test")
+# data <- importTrial("C:/Users/s4548745/Desktop/ACU/ACU_SPRINT_Jump//_Data/CMJ/FVA TESTING N. COWLEY-Countermovement Jump-2022.09.14-10.04.21-Trial1.csv","test")
 # data <- nReps(data)
-# data <- flight(data)
+# data <- flight(data,0.5)
 # data <- qualityCheck(data)
 # data <- perfMetrics(data)
 

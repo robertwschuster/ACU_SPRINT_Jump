@@ -60,17 +60,14 @@ ui <- fluidPage(
 server <- function(input, output) {
   # Load files into workspace
   getData <- reactive({
-    inFile <- input$file
-    if (is.null(inFile)) {
-      return(NULL)
-    } else {
-      numfiles = nrow(inFile)
+    if (!is.null(input$file)) {
+      numfiles = nrow(input$file)
       perfMet = list()
       ds <- list()
       for (i in 1:numfiles) {
         data <- importTrial(input$file[[i,'datapath']],input$file[[i,'name']]) # import and prepare trial
         data <- nReps(data) # check for multiple reps and cut trial accordingly
-        data <- flight(data,input$thl) # determine start and end of flight and start of movement
+        data <- flight(data, input$thl) # determine start and end of flight and start of movement
         data <- qualityCheck(data)
         data <- perfMetrics(data) # calculate performance metrics
         

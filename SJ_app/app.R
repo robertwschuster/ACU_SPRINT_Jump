@@ -56,11 +56,8 @@ ui <- fluidPage(
 server <- function(input, output) {
   # Load files into workspace
   getData <- reactive({
-    inFile <- input$file
-    if (is.null(inFile)) {
-      return(NULL)
-    } else {
-      numfiles = nrow(inFile)
+    if (!is.null(input$file)) {
+      numfiles = nrow(input$file)
       perfMet = list()
       ds <- list()
       for (i in 1:numfiles) {

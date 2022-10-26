@@ -21,14 +21,14 @@ source("Jump_functions.R")
 ui <- fluidPage(
   
   # Application title
-  titlePanel(img(src = "ACU_logo.png", height = 70, width =200)),
+  titlePanel(img(src = "ACU_logo.png", height = 70, width = 200)),
   
   # Sidebar
   sidebarLayout(
     sidebarPanel(
       h3("SPRINT Jump Analyser"),
       
-      selectInput('jumpType', 'Select the type of jump to analyse', c('Squat jump','Countermovement jump'), selectize=FALSE),
+      selectInput('jumpType', 'Select the type of jump to analyse', c('Countermovement jump','Squat jump'), selectize = F),
       fileInput("file", 
                 "Select the files you want to analyse",
                 multiple = T,
@@ -62,9 +62,7 @@ ui <- fluidPage(
 server <- function(input, output) {
   # Load files into workspace
   getData <- reactive({
-    if (is.null(input$file)) {
-      return(NULL)
-    } else {
+    if (!is.null(input$file)) {
       numfiles = nrow(input$file)
       perfMet = list()
       ds <- list()

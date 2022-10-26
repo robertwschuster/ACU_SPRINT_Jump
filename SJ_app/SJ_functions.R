@@ -107,7 +107,7 @@ nReps <- function(data) {
     w = (pks[p]-ds):(pks[p]+de)
     
     if (length(pks) > 1) {
-      n <- paste(data$fn,'_',p)
+      n <- paste0(data$fn,'_',p)
       data[[n]] <- data$df[w,]
       
       data$fmaxi[p] <- (pks[p] - w[1]) + 1
@@ -128,7 +128,7 @@ nReps <- function(data) {
 
 # Determine start and end of flight ------------------------------------------------------
 flight <- function(data) {
-  reps <- names(data)[which(grepl(data$fn,names(data)))]
+  reps <- names(data)[grep(data$fn,names(data))]
   sj <- numeric(length(reps))
   flight <- matrix(0,length(reps),2)
   colnames(flight) <- c('start','end')
@@ -159,7 +159,7 @@ flight <- function(data) {
 
 # Check for indicators of poor trial -----------------------------------------------------
 qualityCheck <- function(data) {
-  reps <- names(data)[which(grepl(data$fn,names(data)))]
+  reps <- names(data)[grep(data$fn,names(data))]
   data$warn <- list()
   for (r in 1:length(reps)) {
     rn <- reps[r]
@@ -184,7 +184,7 @@ qualityCheck <- function(data) {
 
 # Extract performance metrics ------------------------------------------------------------
 perfMetrics <- function(data) {
-  reps <- names(data)[which(grepl(data$fn,names(data)))]
+  reps <- names(data)[grep(data$fn,names(data))]
   pm <-  matrix(0,length(reps),29)
   colnames(pm) <- c('JH_ft','JH_J','JH_di','v t-o',
                     'peak force','rel peak force','peak velocity','peak power','rel peak power',

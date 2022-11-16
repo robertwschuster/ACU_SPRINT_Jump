@@ -128,8 +128,8 @@ nReps <- function(data) {
 
 
 # Determine start and end of flight ------------------------------------------------------
-flight <- function(data) {
-  reps <- names(data)[grep(data$fn,names(data))]
+flight <- function(data,thl) {
+  reps <- names(data)[grep(data$fn,names(data),fixed = T)]
   sj <- numeric(length(reps))
   flight <- matrix(0,length(reps),2)
   colnames(flight) <- c('start','end')
@@ -137,7 +137,8 @@ flight <- function(data) {
     rn <- reps[r]
     # # threshold = 5 SD of 1s weighing period before flight or smallest SD or 1s rolling window
     # th <- sd(data[[rn]]$Total[1:(data$freq*1)])*5
-    th <- min(movstd(data[[rn]]$Total, (data$freq*1)), na.rm = T)*5
+    # th <- min(movstd(data[[rn]]$Total, (data$freq*1)), na.rm = T)*5
+    th <- min(movstd(data[[rn]]$Total, (data$freq*thl)), na.rm = T)*5
     
     # flight thresholds = 5N start, 20N end
     sft <- 5
@@ -160,7 +161,7 @@ flight <- function(data) {
 
 # Check for indicators of poor trial -----------------------------------------------------
 qualityCheck <- function(data) {
-  reps <- names(data)[grep(data$fn,names(data))]
+  reps <- names(data)[grep(data$fn,names(data),fixed = T)]
   data$warn <- list()
   for (r in 1:length(reps)) {
     rn <- reps[r]
@@ -185,7 +186,7 @@ qualityCheck <- function(data) {
 
 # Extract performance metrics ------------------------------------------------------------
 perfMetrics <- function(data) {
-  reps <- names(data)[grep(data$fn,names(data))]
+  reps <- names(data)[grep(data$fn,names(data),fixed = T)]
   pm <-  matrix(0,length(reps),29)
   colnames(pm) <- c('JH_ft','JH_J','JH_di','v t-o',
                     'peak force','rel peak force','peak velocity','peak power','rel peak power',
@@ -262,9 +263,10 @@ perfMetrics <- function(data) {
 
 
 # # Test functions on sample file ----------------------------------------------------------
-# data <- importTrial("C:/Users/s4548745/Desktop/ACU/Jump/SQ/Aimee Morabito-Squat Jump-2022.06.16-11.07.17.csv","test")
+# data <- importTrial("C:/Users/s4548745/Desktop/ACU/Jump/SQ/Tamika Bull-Squat Jump-2022.08.30-09.07.11 (countermovement on 1st - EXCLUDE).csv","test")
+# data <- importTrial("C:/Users/s4548745/Downloads/Tamika Bull-Squat Jump-2022.08.30-09.07.11 (countermovement on 1st - EXCLUDE).csv","test")
 # data <- nReps(data)
-# data <- flight(data)
+# data <- flight(data, 0.5)
 # data <- qualityCheck(data)
 # data <- perfMetrics(data)
 

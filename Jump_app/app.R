@@ -95,7 +95,7 @@ server <- function(input, output) {
   
   # Plot each rep in a separate tab and print associated quality warnings
   repTabs <- function(fn) {
-    reps <- names(getData()[[fn]])[grep(fn,names(getData()[[fn]]))]
+    reps <- names(getData()[[fn]])[grep(fn,names(getData()[[fn]]),fixed = T)]
     rTabs <- lapply(1:length(reps), function(r) {
       rn <- reps[r]
       tabPanel(paste('Rep',r), renderPlot({
@@ -114,7 +114,7 @@ server <- function(input, output) {
         abline(v = t[sj], col = "blue", lwd = 2, lty = "dotdash")
       }),
       # warning messages
-      if (any(grepl(rn,names(getData()[[fn]]$warn)))) {
+      if (any(grepl(rn,names(getData()[[fn]]$warn),fixed = T))) {
         msg <- paste(unlist(getData()[[fn]]$warn[[rn]]), collapse = '<br/>')
         HTML(paste("<b>Warning:</b>", msg, sep = '<br/>'))
       })

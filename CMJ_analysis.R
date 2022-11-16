@@ -257,7 +257,7 @@ for (f in 1:length(data)) {
   JH[f,3] <- max(d) - d[length(d)]
   # stat of concentric (sc)
   ft <- flight[f,2] - flight[f,1]
-  sc[f] <- which(d[1:(length(d)-ft)] == min(d[1:(length(d)-ft)])) + sj[f] # bottom most position of countermovement
+  sc[f] <- min(which(d[1:(length(d)-ft)] == min(d[1:(length(d)-ft)]))) + sj[f] # bottom most position of countermovement
 }
 rm(f,u,Fr,J,a,v,d,ft)
 
@@ -333,16 +333,3 @@ if (grepl(ex,'y',ignore.case = T)) {
   write.csv(tbl, file = paste0(fp,'/',fn,'.csv'))
   rm(tbl)
 }
-
-
-
-
-
-
-
-skip[[fn]] <- read.csv(f, nrows = 20, header = F, blank.lines.skip = F)
-
-x <- read.csv(f, nrows = 20, header = F, blank.lines.skip = F, 
-              col.names = paste0("V",seq_len(max(count.fields(f, sep = ',')))), fill = T)
-
-

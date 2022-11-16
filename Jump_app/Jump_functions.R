@@ -129,7 +129,7 @@ nReps <- function(data) {
 
 # Determine start and end of flight ------------------------------------------------------
 flight <- function(data, thl) {
-  reps <- names(data)[grep(data$fn,names(data))]
+  reps <- names(data)[grep(data$fn,names(data),fixed = T)]
   sj <- numeric(length(reps))
   flight <- matrix(0,length(reps),2)
   colnames(flight) <- c('start','end')
@@ -173,7 +173,7 @@ flight <- function(data, thl) {
 
 # Check for indicators of poor trial -----------------------------------------------------
 qualityCheck <- function(data) {
-  reps <- names(data)[grep(data$fn,names(data))]
+  reps <- names(data)[grep(data$fn,names(data),fixed = T)]
   data$warn <- list()
   for (r in 1:length(reps)) {
     rn <- reps[r]
@@ -198,7 +198,7 @@ qualityCheck <- function(data) {
 
 # Extract performance metrics ------------------------------------------------------------
 perfMetrics <- function(data) {
-  reps <- names(data)[grep(data$fn,names(data))]
+  reps <- names(data)[grep(data$fn,names(data),fixed = T)]
   pm <-  matrix(0,length(reps),29)
   colnames(pm) <- c('JH_ft','JH_J','JH_di','v t-o',
                     'peak force','rel peak force','peak velocity','peak power','rel peak power',
@@ -228,7 +228,7 @@ perfMetrics <- function(data) {
     # stat of concentric (sc)
     if (data$jt == 'Countermovement jump') {
       ft <- data$flight[r,2] - data$flight[r,1]
-      sc <- which(d[1:(length(d)-ft)] == min(d[1:(length(d)-ft)])) + sj # bottom most position of countermovement
+      sc <- min(which(d[1:(length(d)-ft)] == min(d[1:(length(d)-ft)]))) + sj # bottom most position of countermovement
     } else if (data$jt == 'Squat jump') {
       sc <- sj
     }

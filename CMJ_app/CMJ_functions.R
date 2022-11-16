@@ -34,7 +34,8 @@ importTrial <- function(filepath,filename) {
   cols <- c("Time","Z.Left","Z.Right","Left","Right")
   fn <- basename(filename)
   # determine length of header
-  skip <- read.csv(filepath, nrows = 20, header = F, blank.lines.skip = F)
+  skip <- read.csv(filepath, nrows = 20, header = F, blank.lines.skip = F, 
+           col.names = paste0("V",seq_len(max(count.fields(filepath, sep = ',')))), fill = T)
   if (any(skip == "Time", na.rm = T)) {
     skip <- which(skip == 'Time')-1
     

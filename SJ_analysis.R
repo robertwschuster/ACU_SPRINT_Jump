@@ -46,7 +46,8 @@ header <- list()
 for (f in flist) {
   fn <- basename(f)
   # determine length of header
-  skip[[fn]] <- read.csv(f, nrows = 20, header = F, blank.lines.skip = F)
+  skip[[fn]] <- read.csv(f, nrows = 20, header = F, blank.lines.skip = F, 
+                         col.names = paste0("V",seq_len(max(count.fields(f, sep = ',')))), fill = T)
   if (any(skip[[fn]] == "Time", na.rm = T)) {
     skip[[fn]] <- which(skip[[fn]] == 'Time')-1
     

@@ -145,12 +145,12 @@ flight <- function(data,thl) {
     eft <- 20
     
     # start and end of flight = first and last instance when force < flight thresholds
-    flight[r,1] <- min(which(data[[rn]]$Total[1:data$fmaxi[r]] < sft))
     flight[r,2] <- max(which(data[[rn]]$Total[1:data$fmaxi[r]] < eft))
+    ep <- min(which(data[[rn]]$Total[1:flight[r,2]] == max(data[[rn]]$Total[1:flight[r,2]])))
+    flight[r,1] <- min(which(data[[rn]]$Total[ep:flight[r,2]] < sft)) + ep
+    em <- min(which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep]))) + (ep-data$freq*1)
     
     # start of jump movement (sj) & start of concentric (sc)
-    ep <- min(which(data[[rn]]$Total[1:flight[r,1]] == max(data[[rn]]$Total[1:flight[r,1]])))
-    em <- min(which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep]))) + (ep-data$freq*1)
     if (any(data[[rn]]$Total[1:em] < (data$bodymass - th))) { # there is a countermovement
       sj[r] <- max(which(data[[rn]]$Total[1:em] > (data$bodymass - th)))
       # sj[r] <- max(which(data[[rn]]$Total[1:em] > (data$bodymass - th))) - (data$freq*0.03)
@@ -223,7 +223,7 @@ perfMetrics <- function(data) {
     # power
     p <- data[[rn]]$Total[data$sj[r]:data$flight[r,2]] * v # power = Fz * velocity
     # peak power index
-    ppi <- which(p == max(p))
+    ppi <- min(which(p == max(p)))
     # peak & min force indices
     pfi <- min(which(data[[rn]]$Total[data$sj[r]:data$flight[r,1]] == max(data[[rn]]$Total[data$sj[r]:data$flight[r,1]]))) + data$sj[r]
     mfi <- min(which(data[[rn]]$Total[data$sj[r]:pfi] == min(data[[rn]]$Total[data$sj[r]:pfi]))) + data$sj[r]

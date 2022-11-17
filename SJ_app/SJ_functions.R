@@ -220,7 +220,7 @@ perfMetrics <- function(data) {
     # power
     p <- data[[rn]]$Total[sj:data$flight[r,2]] * v # power = Fz * velocity
     # peak power index
-    ppi <- which(p == max(p))
+    ppi <- min(which(p == max(p)))
     # peak & min force indices
     pfi <- min(which(data[[rn]]$Total[sj:data$flight[r,1]] == max(data[[rn]]$Total[sj:data$flight[r,1]]))) + sj
     mfi <- min(which(data[[rn]]$Total[sj:pfi] == min(data[[rn]]$Total[sj:pfi]))) + sj

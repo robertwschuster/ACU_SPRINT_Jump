@@ -178,12 +178,12 @@ for (f in names(data)) {
   eft <- 20
   
   # start and end of flight = first and last instance when force < flight thresholds
-  flight[fi,1] <- min(which(data[[f]]$Total[1:fmaxi[[f]]] < sft))
   flight[fi,2] <- max(which(data[[f]]$Total[1:fmaxi[[f]]] < eft))
+  ep <- min(which(data[[f]]$Total[1:flight[fi,2]] == max(data[[f]]$Total[1:flight[fi,2]])))
+  flight[fi,1] <- min(which(data[[f]]$Total[ep:flight[fi,2]] < sft)) + ep
+  em <- min(which(data[[f]]$Total[(ep-freq[[f]]*1):ep] == min(data[[f]]$Total[(ep-freq[[f]]*1):ep]))) + (ep-freq[[f]]*1)
   
   # start of jump movement (sj) & start of concentric (sc)
-  ep <- which(data[[f]]$Total[1:flight[fi,1]] == max(data[[f]]$Total[1:flight[fi,1]]))
-  em <- which(data[[f]]$Total[(ep-freq[[f]]*1):ep] == min(data[[f]]$Total[(ep-freq[[f]]*1):ep])) + (ep-freq[[f]]*1)
   if (any(data[[f]]$Total[1:em] < (bodymass[[f]] - th[fi]))) { # there is a countermovement
     sj[fi] <- max(which(data[[f]]$Total[1:em] > (bodymass[[f]] - th[fi])))
     # sj[fi] <- max(which(data[[f]]$Total[1:em] > (bodymass[[f]] - th[f]))) - (freq[[f]]*0.03)
@@ -279,10 +279,10 @@ for (f in 1:length(data)) {
   d <- cumsum(c(0,(v[1:(length(v)-1)] + v[2:length(v)])/2 * diff(data[[f]]$Time[sj[f]:flight[f,2]]))) # displacement (trapz integration of velocity)
   p <- data[[f]]$Total[sj[f]:flight[f,2]] * v # power = Fz * velocity
   # peak power index
-  ppi <- which(p == max(p))
+  ppi <- min(which(p == max(p)))
   # peak & min force indices
-  pfi <- which(data[[f]]$Total[sj[f]:flight[f,1]] == max(data[[f]]$Total[sj[f]:flight[f,1]])) + sj[f]
-  mfi <- which(data[[f]]$Total[sj[f]:pfi] == min(data[[f]]$Total[sj[f]:pfi])) + sj[f]
+  pfi <- min(which(data[[f]]$Total[sj[f]:flight[f,1]] == max(data[[f]]$Total[sj[f]:flight[f,1]]))) + sj[f]
+  mfi <- min(which(data[[f]]$Total[sj[f]:pfi] == min(data[[f]]$Total[sj[f]:pfi]))) + sj[f]
   
   PM[f,1] <- v[flight[f,1]-sj[f]] # take-off velocity
   

@@ -85,7 +85,7 @@ for (f in fnames) {
   if (any(header[[f]] == "Weight", na.rm = T)) {
     bodymass[[f]] <- as.numeric(na.omit(header[[f]][header[[f]] == 'Weight',2])) * 9.81
   } else {
-    bodymass[[f]] <- median(data[[f]]$Total)
+    bodymass[[f]] <- median(data[[f]]$Total[data[[f]]$Total >= 300])
   }
   # find frequency
   freq[[f]] <- as.numeric(na.omit(header[[f]][header[[f]] == 'Frequency',2]))
@@ -214,7 +214,7 @@ for (f in 1:length(data)) {
   }
   
   # countermovement before jump
-  if (any(data[[f]]$Total[sj[f]-(freq[[f]]*0.25):sj[f]] < (bodymass[[f]] - th[f]))) {
+  if (any(data[[f]]$Total[(sj[f] - freq[[f]]*0.25):sj[f]] < (bodymass[[f]] - th[f]))) {
     ptq[f,2] <- 'X'
     # message(paste("Warning:", names(data)[f], "contains a countermovement prior to the squat jump"))
     # # ask whether to continue processing or not
@@ -284,10 +284,10 @@ for (f in 1:length(data)) {
   PM[f,10] <- mean(p[1:ppi]) # mean power
   PM[f,11] <- mean(p[1:ppi]) / bodymass[[f]] # relative mean power
   
-  PM[f,12] <- (data[[f]]$Total[freq[[f]]*0.05] - data[[f]]$Total[sj[f]]) / (data[[f]]$Time[freq[[f]]*0.05] - data[[f]]$Time[sj[f]]) # RFD 50 ms
-  PM[f,13] <- (data[[f]]$Total[freq[[f]]*0.10] - data[[f]]$Total[sj[f]]) / (data[[f]]$Time[freq[[f]]*0.10] - data[[f]]$Time[sj[f]])
-  PM[f,14] <- (data[[f]]$Total[freq[[f]]*0.15] - data[[f]]$Total[sj[f]]) / (data[[f]]$Time[freq[[f]]*0.15] - data[[f]]$Time[sj[f]])
-  PM[f,15] <- (data[[f]]$Total[freq[[f]]*0.20] - data[[f]]$Total[sj[f]]) / (data[[f]]$Time[freq[[f]]*0.20] - data[[f]]$Time[sj[f]])
+  PM[f,12] <- (data[[f]]$Total[sj[f] + freq[[f]]*0.05] - data[[f]]$Total[sj[f]])/0.05 # RFD 50 ms
+  PM[f,13] <- (data[[f]]$Total[sj[f] + freq[[f]]*0.10] - data[[f]]$Total[sj[f]])/0.10
+  PM[f,14] <- (data[[f]]$Total[sj[f] + freq[[f]]*0.15] - data[[f]]$Total[sj[f]])/0.15
+  PM[f,15] <- (data[[f]]$Total[sj[f] + freq[[f]]*0.20] - data[[f]]$Total[sj[f]])/0.20
   PM[f,16] <- (data[[f]]$Total[pfi] - data[[f]]$Total[mfi]) / (data[[f]]$Time[pfi] - data[[f]]$Time[mfi]) # RFD from min to max force
 
   PM[f,17] <- j[(freq[[f]]*0.05)] # impulse at 50, 100, 150, 200, 250 ms after start of movement

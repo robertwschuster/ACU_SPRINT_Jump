@@ -85,7 +85,7 @@ for (f in fnames) {
   if (any(header[[f]] == "Weight", na.rm = T)) {
     bodymass[[f]] <- as.numeric(na.omit(header[[f]][header[[f]] == 'Weight',2])) * 9.81
   } else {
-    bodymass[[f]] <- median(data[[f]]$Total)
+    bodymass[[f]] <- median(data[[f]]$Total[data[[f]]$Total >= 300])
   }
   # find frequency
   freq[[f]] <- as.numeric(na.omit(header[[f]][header[[f]] == 'Frequency',2]))
@@ -276,6 +276,7 @@ for (f in 1:length(data)) {
   # acceleration, velocity, displacement & power
   a <- (data[[f]]$Total[sj[f]:flight[f,2]] / (bodymass[[f]] / 9.81)) - 9.81 # acceleration between start of movement and take-off
   v <- cumsum(c(0,(a[1:(length(a)-1)] + a[2:length(a)])/2 * diff(data[[f]]$Time[sj[f]:flight[f,2]]))) # velocity (trapz integration of acceleration)
+  vp <- v[v >= 0] # positive velocity (equivalent to concentric only)
   d <- cumsum(c(0,(v[1:(length(v)-1)] + v[2:length(v)])/2 * diff(data[[f]]$Time[sj[f]:flight[f,2]]))) # displacement (trapz integration of velocity)
   p <- data[[f]]$Total[sj[f]:flight[f,2]] * v # power = Fz * velocity
   # peak power index
@@ -287,21 +288,21 @@ for (f in 1:length(data)) {
   PM[f,1] <- v[flight[f,1]-sj[f]] # take-off velocity
   
   PM[f,2] <- max(data[[f]]$Total[sj[f]:flight[f,1]]) # peak force
-  PM[f,3] <- max(data[[f]]$Total[sj[f]:flight[f,1]]) / bodymass[[f]] # relative peak force
+  PM[f,3] <- max(data[[f]]$Total[sj[f]:flight[f,1]]) / (bodymass[[f]]/9.81) # relative peak force
   PM[f,4] <- max(v) # peak velocity
   PM[f,5] <- max(p) # peak power
-  PM[f,6] <- max(p) / bodymass[[f]] # relative peak power
+  PM[f,6] <- max(p) / (bodymass[[f]]/9.81) # relative peak power
   
   PM[f,7] <- mean(data[[f]]$Total[sj[f]:flight[f,1]]) # mean force
-  PM[f,8] <- mean(data[[f]]$Total[sj[f]:flight[f,1]]) / bodymass[[f]] # relative mean force
-  PM[f,9] <- mean(v[1:max(which(v == max(v)))]) # mean velocity
+  PM[f,8] <- mean(data[[f]]$Total[sj[f]:flight[f,1]]) / (bodymass[[f]]/9.81) # relative mean force
+  PM[f,9] <- mean(vp[1:max(which(vp == max(vp)))]) # mean velocity
   PM[f,10] <- mean(p[1:ppi]) # mean power
-  PM[f,11] <- mean(p[1:ppi]) / bodymass[[f]] # relative mean power
+  PM[f,11] <- mean(p[1:ppi]) / (bodymass[[f]]/9.81) # relative mean power
   
-  PM[f,12] <- (data[[f]]$Total[freq[[f]]*0.05] - data[[f]]$Total[sc[f]]) / (data[[f]]$Time[freq[[f]]*0.05] - data[[f]]$Time[sc[f]]) # RFD at 50 ms
-  PM[f,13] <- (data[[f]]$Total[freq[[f]]*0.10] - data[[f]]$Total[sc[f]]) / (data[[f]]$Time[freq[[f]]*0.10] - data[[f]]$Time[sc[f]])
-  PM[f,14] <- (data[[f]]$Total[freq[[f]]*0.15] - data[[f]]$Total[sc[f]]) / (data[[f]]$Time[freq[[f]]*0.15] - data[[f]]$Time[sc[f]])
-  PM[f,15] <- (data[[f]]$Total[freq[[f]]*0.20] - data[[f]]$Total[sc[f]]) / (data[[f]]$Time[freq[[f]]*0.20] - data[[f]]$Time[sc[f]])
+  PM[f,12] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.05] - data[[f]]$Total[sc[f]])/0.05 # RFD 50 ms
+  PM[f,13] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.10] - data[[f]]$Total[sc[f]])/0.10
+  PM[f,14] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.15] - data[[f]]$Total[sc[f]])/0.15
+  PM[f,15] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.20] - data[[f]]$Total[sc[f]])/0.20
   PM[f,16] <- (data[[f]]$Total[pfi] - data[[f]]$Total[mfi]) / (data[[f]]$Time[pfi] - data[[f]]$Time[mfi]) # RFD from min to max force
 
   PM[f,17] <- j[(freq[[f]]*0.05)] # impulse at 50, 100, 150, 200 ms after start of concentric

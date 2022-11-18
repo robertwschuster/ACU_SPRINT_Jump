@@ -53,7 +53,7 @@ importTrial <- function(filepath,filename) {
       if (any(header == "Weight", na.rm = T)) {
         bodymass <- as.numeric(na.omit(header[header == 'Weight',2])) * 9.81
       } else {
-        bodymass <- median(df$Total)
+        bodymass <- median(df$Total[df$Total >= 300])
       }
       # find frequency
       freq <- as.numeric(na.omit(header[header == 'Frequency',2]))
@@ -175,7 +175,7 @@ qualityCheck <- function(data) {
       i <- i + 1
     }
     # countermovement before jump
-    if (any(data[[rn]]$Total[data$sj[r]-(data$freq*0.25):data$sj[r]] < (data$bodymass - th))) {
+    if (any(data[[rn]]$Total[(data$sj[r] - data$freq*0.25):data$sj[r]] < (data$bodymass - th))) {
       data$warn[[rn]][[i]] <- "This rep contains a countermovement prior to the squat jump"
       i <- i + 1
     }
@@ -239,10 +239,10 @@ perfMetrics <- function(data) {
     pm[r,13] <- mean(p[1:ppi]) # mean power
     pm[r,14] <- mean(p[1:ppi]) / data$bodymass # relative mean power
     
-    pm[r,15] <- (data[[rn]]$Total[data$freq*0.05] - data[[rn]]$Total[sj]) / (data[[rn]]$Time[data$freq*0.05] - data[[rn]]$Time[sj]) # RFD at 50 ms
-    pm[r,16] <- (data[[rn]]$Total[data$freq*0.10] - data[[rn]]$Total[sj]) / (data[[rn]]$Time[data$freq*0.10] - data[[rn]]$Time[sj])
-    pm[r,17] <- (data[[rn]]$Total[data$freq*0.15] - data[[rn]]$Total[sj]) / (data[[rn]]$Time[data$freq*0.15] - data[[rn]]$Time[sj])
-    pm[r,18] <- (data[[rn]]$Total[data$freq*0.20] - data[[rn]]$Total[sj]) / (data[[rn]]$Time[data$freq*0.20] - data[[rn]]$Time[sj])
+    pm[r,15] <- (data[[rn]]$Total[sj + data$freq*0.05] - data[[rn]]$Total[sj])/0.05 # RFD 50 ms
+    pm[r,16] <- (data[[rn]]$Total[sj + data$freq*0.10] - data[[rn]]$Total[sj])/0.10
+    pm[r,17] <- (data[[rn]]$Total[sj + data$freq*0.15] - data[[rn]]$Total[sj])/0.15
+    pm[r,18] <- (data[[rn]]$Total[sj + data$freq*0.20] - data[[rn]]$Total[sj])/0.20
     pm[r,19] <- (data[[rn]]$Total[pfi] - data[[rn]]$Total[mfi]) / (data[[rn]]$Time[pfi] - data[[rn]]$Time[mfi]) # RFD from min to max force
     
     pm[r,20] <- j[data$freq*0.05] # impulse at 50, 100, 150, 200 ms after start of concentric

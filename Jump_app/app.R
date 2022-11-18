@@ -11,6 +11,7 @@
 
 # TO DO ----------------------------------------------------------------------------------
 # - Add 'Both' option to jumpType and automatic jump type detection
+# - Add 'bodyweight' input option to enable manual entry if extracted weight is off
 # ----------------------------------------------------------------------------------------
 
 library(shiny)

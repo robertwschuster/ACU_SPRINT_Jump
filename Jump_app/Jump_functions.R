@@ -28,6 +28,19 @@ movstd <- function(vec, width)
   return(c(rep(NA,width-1), sapply(seq_along(vec[width:length(vec)]),      
                                    function(i) sd(vec[i:(i+width-1)]))))
 
+# find flight as the longest period where Fz is smaller than a threshold
+find_flight <- function(fz, th) {
+  fz[fz <= th] <- 1
+  fz[fz > th] <- 0
+  
+  z <- rle(fz == 1)
+  zmi <- which(z$lengths == max(z$lengths[z$values]))
+  
+  out <- list(start = sum(z$lengths[seq_len(zmi-1)]) + 1,
+              end = sum(z$lengths[seq_len(zmi)]))
+  return(out)
+}
+
 
 # Load data ------------------------------------------------------------------------------
 importTrial <- function(filepath,filename,jumpType) {
@@ -80,11 +93,11 @@ nReps <- function(data) {
   d <- data$freq*2 # frequency * 2s
   pks <- find_peaks(data$df$Total, m = d)
   # determine a cutoff under which all other peaks cannot be considered IMTP trials
-  cutoff <- (max(data$df$Total[pks])-data$bodymass)/2 + data$bodymass # half of BM normalised max force
+  cutoff <- (max(data$df$Total[pks])-data$bodymass)/2.75 + data$bodymass # 36% of BM normalised max force
   # cutoff <- max(data$df$Total[pks])-250 # within 250 N of max value
   # only keep peaks above cutoff and more than 5s apart
   pks <- pks[which(data$df$Total[pks] > cutoff)]
-  d <- data$freq*5 # frequency * 5s
+  d <- data$freq*2.5 # frequency * 2.5s
   if (any(diff(pks) < d)) {
     pks <- pks[-(which(diff(pks) < d)+1)]
   }
@@ -145,7 +158,8 @@ flight <- function(data, thl) {
     eft <- 20
     
     # start and end of flight = first and last instance when force < flight thresholds
-    flight[r,2] <- max(which(data[[rn]]$Total[1:data$fmaxi[r]] < eft))
+    zero <- find_flight(data[[rn]]$Total[1:data$fmaxi[r]], sft)
+    flight[r,2] <- min(which(data[[rn]]$Total[zero$start:length(data[[rn]]$Total)] > eft)) + zero$start
     ep <- min(which(data[[rn]]$Total[1:flight[r,2]] == max(data[[rn]]$Total[1:flight[r,2]])))
     flight[r,1] <- min(which(data[[rn]]$Total[ep:flight[r,2]] < sft)) + ep
     em <- min(which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep]))) + (ep-data$freq*1)

@@ -80,11 +80,11 @@ nReps <- function(data) {
   d <- data$freq*2 # frequency * 2s
   pks <- find_peaks(data$df$Total, m = d)
   # determine a cutoff under which all other peaks cannot be considered IMTP trials
-  cutoff <- (max(data$df$Total[pks])-data$bodymass)/2 + data$bodymass # half of BM normalised max force
+  cutoff <- (max(data$df$Total[pks])-data$bodymass)/2.75 + data$bodymass # 36% of BM normalised max force
   # cutoff <- max(data$df$Total[pks])-250 # within 250 N of max value
   # only keep peaks above cutoff and more than 5s apart
   pks <- pks[which(data$df$Total[pks] > cutoff)]
-  d <- data$freq*5 # frequency * 5s
+  d <- data$freq*2.5 # frequency * 2.5s
   if (any(diff(pks) < d)) {
     pks <- pks[-(which(diff(pks) < d)+1)]
   }

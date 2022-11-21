@@ -33,6 +33,19 @@ movstd <- function(vec, width)
   return(c(rep(NA,width-1), sapply(seq_along(vec[width:length(vec)]),      
                                    function(i) sd(vec[i:(i+width-1)]))))
 
+# find flight as the longest period where Fz is smaller than a threshold
+find_flight <- function(fz, th) {
+  fz[fz <= th] <- 1
+  fz[fz > th] <- 0
+  
+  z <- rle(fz == 1)
+  zmi <- which(z$lengths == max(z$lengths[z$values]))
+  
+  out <- list(start = sum(z$lengths[seq_len(zmi-1)]) + 1,
+              end = sum(z$lengths[seq_len(zmi)]))
+  return(out)
+}
+
 
 # Load data ------------------------------------------------------------------------------
 # select files to analyze
@@ -106,14 +119,13 @@ for (f in fnames) {
        xlab = "Time [s]", ylab = "Force [N]", main = f)
   points(x = data[[f]]$Time[c(1:nrow(data[[f]]))[pks]], y = data[[f]]$Total[pks], col = "red")
   # determine a cutoff under which all other peaks cannot be considered IMTP trials
-  cutoff <- (max(data[[f]]$Total[pks])-bodymass[[f]])/2 + bodymass[[f]] # half of BM normalised max force
-  # cutoff <- max(data[[fn]]$Total[pks])-250 # within 250 N of max value
+  cutoff <- (max(data[[f]]$Total[pks])-bodymass[[f]])/2.75 + bodymass[[f]] # 36% of BM normalised max force
   abline(h = cutoff, col = "green", lty = "dashed")
   abline(h = bodymass[[f]], col = "blue", lty = "dashed")
   abline(h = 0, col = "red", lty = "dashed")
   # only keep peaks above cutoff and more than 5s apart
   pks <- pks[which(data[[f]]$Total[pks] > cutoff)]
-  d <- freq[[f]]*5 # frequency * 5s
+  d <- freq[[f]]*2.5 # frequency * 2.5s
   if (any(diff(pks) < d)) {
     pks <- pks[-(which(diff(pks) < d)+1)]
   }
@@ -168,9 +180,7 @@ flight <- matrix(0,length(data),2)
 colnames(flight) <- c('start','end')
 fi <- 1
 for (f in names(data)) {
-  # # threshold = 5 SD of 1s weighing period before flight or smallest SD or 1s rolling window
-  # th[fi] <- sd(data[[f]]$Total[1:(freq[[f]]*1)])*5
-  # th[fi] <- min(movstd(data[[f]]$Total, (freq[[f]]*1)), na.rm = T)*5 # 1s rolling min
+  # threshold = 5 SD of 1s weighing period before flight or smallest SD or 1s rolling window
   th[fi] <- min(movstd(data[[f]]$Total, (freq[[f]]*0.5)), na.rm = T)*5 # 0.5s rolling min
   
   # flight thresholds = 5N start, 20N end
@@ -178,15 +188,15 @@ for (f in names(data)) {
   eft <- 20
   
   # start and end of flight = first and last instance when force < flight thresholds
-  flight[fi,2] <- max(which(data[[f]]$Total[1:fmaxi[[f]]] < eft))
+  zero <- find_flight(data[[f]]$Total[1:fmaxi[[f]]], sft)
+  flight[fi,2] <- min(which(data[[f]]$Total[zero$start:length(data[[f]]$Total)] > eft)) + zero$start
   ep <- min(which(data[[f]]$Total[1:flight[fi,2]] == max(data[[f]]$Total[1:flight[fi,2]])))
   flight[fi,1] <- min(which(data[[f]]$Total[ep:flight[fi,2]] < sft)) + ep
   em <- min(which(data[[f]]$Total[(ep-freq[[f]]*1):ep] == min(data[[f]]$Total[(ep-freq[[f]]*1):ep]))) + (ep-freq[[f]]*1)
   
   # start of jump movement (sj) & start of concentric (sc)
   if (any(data[[f]]$Total[1:em] < (bodymass[[f]] - th[fi]))) { # there is a countermovement
-    sj[fi] <- max(which(data[[f]]$Total[1:em] > (bodymass[[f]] - th[fi])))
-    # sj[fi] <- max(which(data[[f]]$Total[1:em] > (bodymass[[f]] - th[f]))) - (freq[[f]]*0.03)
+    sj[fi] <- max(which(data[[f]]$Total[1:em] > (bodymass[[f]] - th[fi]))) # - (freq[[f]]*0.03)
     fi <- fi+1
   } else { # remove jump
     if (length(names(data)) > 1) {
@@ -334,3 +344,4 @@ if (grepl(ex,'y',ignore.case = T)) {
   write.csv(tbl, file = paste0(fp,'/',fn,'.csv'))
   rm(tbl)
 }
+

@@ -224,12 +224,21 @@ for (f in 1:length(data)) {
   sf <- flight[f,1]
   ef <- flight[f,2]
   
+  # double integration (di)
+  a <- (data[[f]]$Total[sj[f]:ef] / (bodymass[[f]] / 9.81)) - 9.81 # acceleration between start of movement and take-off
+  v <- cumsum(c(0,(a[1:(length(a)-1)] + a[2:length(a)])/2 * diff(data[[f]]$Time[sj[f]:ef]))) # velocity (trapz integration of acceleration)
+  d <- cumsum(c(0,(v[1:(length(v)-1)] + v[2:length(v)])/2 * diff(data[[f]]$Time[sj[f]:ef]))) # displacement (trapz integration of velocity)
+  ft <- ef-sf
+  # sc <- min(which(d[1:(length(d)-ft)] == min(d[1:(length(d)-ft)]))) + sj[f] # bottom most position of countermovement
+  sc <- min(which(a >= 0)) + sj[f] # bottom most position of countermovement
+  
   plot(x = data[[f]]$Time, y = data[[f]]$Total, type = "l", lwd = 2, 
        xlab = "Time [s]", ylab = "Force [N]", main = names(data)[f])
   abline(h = bodymass[[f]], col = "green", lwd = 2, lty = "dashed")
   abline(v = data[[f]]$Time[sf], col = "red", lwd = 2, lty = "dotted")
   abline(v = data[[f]]$Time[ef], col = "red", lwd = 2, lty = "dotted")
   abline(v = data[[f]]$Time[sj[f]], col = "blue", lwd = 2, lty = "dotdash")
+  abline(v = data[[f]]$Time[sc], col = "blue", lwd = 2, lty = "dotdash")
   
   # unstable weighing period before jump (change in force > 50 N)
   if (any(diff(data[[f]]$Total[1:sf]) > 50)) {
@@ -251,6 +260,7 @@ FT <-  numeric(length(data))
 JH <-  matrix(0,length(data),3)
 colnames(JH) <- c('JH_ft','JH_J','JH_di')
 sc <- numeric(length(data))
+sp <- numeric(length(data))
 for (f in 1:length(data)) {
   # flight time (FT)
   FT[f] <- data[[f]]$Time[flight[f,2]] - data[[f]]$Time[flight[f,1]]
@@ -268,6 +278,8 @@ for (f in 1:length(data)) {
   # stat of concentric (sc)
   ft <- flight[f,2] - flight[f,1]
   sc[f] <- min(which(d[1:(length(d)-ft)] == min(d[1:(length(d)-ft)]))) + sj[f] # bottom most position of countermovement
+  # start of positive acceleration
+  sp[f] <- min(which(a >= 0)) + sj[f]
 }
 rm(f,u,Fr,J,a,v,d,ft)
 
@@ -309,10 +321,14 @@ for (f in 1:length(data)) {
   PM[f,10] <- mean(p[1:ppi]) # mean power
   PM[f,11] <- mean(p[1:ppi]) / (bodymass[[f]]/9.81) # relative mean power
   
-  PM[f,12] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.05] - data[[f]]$Total[sc[f]])/0.05 # RFD 50 ms
-  PM[f,13] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.10] - data[[f]]$Total[sc[f]])/0.10
-  PM[f,14] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.15] - data[[f]]$Total[sc[f]])/0.15
-  PM[f,15] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.20] - data[[f]]$Total[sc[f]])/0.20
+  # PM[f,12] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.05] - data[[f]]$Total[sc[f]])/0.05 # RFD 50 ms
+  # PM[f,13] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.10] - data[[f]]$Total[sc[f]])/0.10
+  # PM[f,14] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.15] - data[[f]]$Total[sc[f]])/0.15
+  # PM[f,15] <- (data[[f]]$Total[sc[f] + freq[[f]]*0.20] - data[[f]]$Total[sc[f]])/0.20
+  PM[f,12] <- (data[[f]]$Total[sp[f] + freq[[f]]*0.05] - data[[f]]$Total[sp[f]])/0.05 # RFD 50 ms
+  PM[f,13] <- (data[[f]]$Total[sp[f] + freq[[f]]*0.10] - data[[f]]$Total[sp[f]])/0.10
+  PM[f,14] <- (data[[f]]$Total[sp[f] + freq[[f]]*0.15] - data[[f]]$Total[sp[f]])/0.15
+  PM[f,15] <- (data[[f]]$Total[sp[f] + freq[[f]]*0.20] - data[[f]]$Total[sp[f]])/0.20
   PM[f,16] <- (data[[f]]$Total[pfi] - data[[f]]$Total[mfi]) / (data[[f]]$Time[pfi] - data[[f]]$Time[mfi]) # RFD from min to max force
 
   PM[f,17] <- j[(freq[[f]]*0.05)] # impulse at 50, 100, 150, 200 ms after start of concentric
@@ -344,4 +360,42 @@ if (grepl(ex,'y',ignore.case = T)) {
   write.csv(tbl, file = paste0(fp,'/',fn,'.csv'))
   rm(tbl)
 }
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# # Plot start of concentric and CoM displacement (on separate y axis)
+# for (f in 1:length(data)) {
+#   sf <- flight[f,1]
+#   ef <- flight[f,2]
+#   
+#   a <- (data[[f]]$Total / (bodymass[[f]] / 9.81)) - 9.81 # acceleration between start of movement and take-off
+#   v <- cumsum(c(0,(a[1:(length(a)-1)] + a[2:length(a)])/2 * diff(data[[f]]$Time))) # velocity (trapz integration of acceleration)
+#   d <- cumsum(c(0,(v[1:(length(v)-1)] + v[2:length(v)])/2 * diff(data[[f]]$Time))) # displacement (trapz integration of velocity)
+#   sc <- min(which(d[1:sf] == min(d[1:sf]))) # bottom most position of countermovement
+#   
+#   par(mar = c(5, 4, 4, 4) + 0.3)
+#   plot(x = data[[f]]$Time, y = data[[f]]$Total, type = "l", lwd = 2, 
+#        xlab = "Time [s]", ylab = "Force [N]", main = names(data)[f])
+#   abline(h = bodymass[[f]], col = "green", lwd = 2, lty = "dashed")
+#   abline(v = data[[f]]$Time[sf], col = "red", lwd = 2, lty = "dotted")
+#   abline(v = data[[f]]$Time[ef], col = "red", lwd = 2, lty = "dotted")
+#   abline(v = data[[f]]$Time[sj[f]], col = "blue", lwd = 2, lty = "dotdash")
+#   abline(v = data[[f]]$Time[sc], col = "blue", lwd = 2, lty = "dotdash")
+#   par(new = T)
+#   plot(x = data[[f]]$Time, y = d, type = 'l', col = 'grey', lwd = 2,
+#        axes = F, bty = 'n', xlab = '', ylab = '')
+#   axis(side = 4)
+#   mtext('Displacement [m]', side=4, line=3)
+# }
+
+
+
+
+
+
+
+
+
 

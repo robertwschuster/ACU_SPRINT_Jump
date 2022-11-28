@@ -120,7 +120,7 @@ server <- function(input, output) {
         tabPanel(fn, repTabs(fn))
       }
     })
-    do.call(tabsetPanel, fTabs)
+    do.call(navlistPanel, fTabs)
   })
   
   # Save csv of performance metrics

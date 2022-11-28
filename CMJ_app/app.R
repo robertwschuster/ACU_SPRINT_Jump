@@ -16,6 +16,7 @@
 # ----------------------------------------------------------------------------------------
 
 library(shiny)
+library(DT)
 source("CMJ_functions.R")
 
 # UI -------------------------------------------------------------------------------------
@@ -25,32 +26,37 @@ ui <- fluidPage(
   titlePanel(img(src = "ACU_logo.png", height = 70, width =200)),
   
   # Sidebar
-  sidebarLayout(
-    sidebarPanel(
-      h3("SPRINT Countermovement Jump Analyser"),
-      
-      fileInput("file", 
-                "Select the files you want to analyse",
-                multiple = T,
-                accept = c("text/csv",
-                           "text/comma-separated-values,text/plain",
-                           ".csv")),
-      tags$hr(), # horizontal line
-      # length of period to determine CM threshold
-      sliderInput("thl", "Quiet standing period length [s]:",
-                  min = 0.1, max = 1,
-                  value = 0.5, step = 0.1),
-      tags$hr(), # horizontal line
-      # Save filename
-      textInput("fileName", "Enter the file name you want to save the results to:"),
-      
-      # Download button
-      downloadButton("downloadData", "Download")
+  # sidebarLayout(
+  #   sidebarPanel(
+  fluidRow(
+    column(3,
+           wellPanel(
+             h3("SPRINT Countermovement Jump Analyser"),
+             
+             fileInput("file", 
+                       "Select the files you want to analyse",
+                       multiple = T,
+                       accept = c("text/csv",
+                                  "text/comma-separated-values,text/plain",
+                                  ".csv")),
+             tags$hr(), # horizontal line
+             # length of period to determine CM threshold
+             sliderInput("thl", "Quiet standing period length [s]:",
+                         min = 0.1, max = 1,
+                         value = 0.5, step = 0.1),
+             tags$hr(), # horizontal line
+             # Save filename
+             textInput("fileName", "Enter the file name you want to save the results to:"),
+             
+             # Download button
+             downloadButton("downloadData", "Download")
+           )
     ),
     
     # Performance metrics table and graphs of each rep
-    mainPanel(
-      tableOutput("results"),
+    # mainPanel(
+    column(9,
+      dataTableOutput("results"),
       uiOutput('repTabs')
     )
   )
@@ -80,9 +86,13 @@ server <- function(input, output) {
   })
   
   # Table of performance metrics
-  output$results <- renderTable(
+  output$results <- renderDataTable(
     getData()$pm,
-    rownames = T
+    rownames = T,
+    options = list(select = F,
+                   searching = F,
+                   scrollX = T,
+                   scrollY = T)
   )
   
   # Plot each rep in a separate tab and print associated quality warnings
@@ -125,7 +135,7 @@ server <- function(input, output) {
           tabPanel(fn, repTabs(fn))
         }
       })
-      do.call(tabsetPanel, fTabs)
+      do.call(navlistPanel, fTabs)
     }
   })
   

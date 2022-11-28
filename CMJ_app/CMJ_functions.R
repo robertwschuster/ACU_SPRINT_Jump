@@ -164,7 +164,7 @@ flight <- function(data,thl) {
     flight[r,1] <- min(which(data[[rn]]$Total[ep:flight[r,2]] < sft)) + ep
     em <- min(which(data[[rn]]$Total[(ep-data$freq*1):ep] == min(data[[rn]]$Total[(ep-data$freq*1):ep]))) + (ep-data$freq*1)
     
-    # start of jump movement (sj) & start of concentric (sc)
+    # start of jump movement (sj)
     if (any(data[[rn]]$Total[1:em] < (data$bodymass - th))) { # there is a countermovement
       sj[r] <- max(which(data[[rn]]$Total[1:em] > (data$bodymass - th)))
       # sj[r] <- max(which(data[[rn]]$Total[1:em] > (data$bodymass - th))) - (data$freq*0.03)
@@ -231,6 +231,8 @@ perfMetrics <- function(data) {
     # stat of concentric (sc)
     ft <- data$flight[r,2] - data$flight[r,1]
     sc <- which(d[1:(length(d)-ft)] == min(d[1:(length(d)-ft)])) + data$sj[r] # bottom most position of countermovement
+    # start of positive acceleration
+    sp <- min(which(a >= 0)) + data$sj[r]
     
     # impulse
     fz <- data[[rn]]$Total[sc:data$flight[r,1]] # Fz = force between start of concentric and take-off
@@ -257,10 +259,14 @@ perfMetrics <- function(data) {
     pm[r,13] <- mean(p[1:ppi]) # mean power
     pm[r,14] <- mean(p[1:ppi]) / data$bodymass # relative mean power
     
-    pm[r,15] <- (data[[rn]]$Total[sc + data$freq*0.05] - data[[rn]]$Total[sc])/0.05 # RFD 50 ms
-    pm[r,16] <- (data[[rn]]$Total[sc + data$freq*0.10] - data[[rn]]$Total[sc])/0.10
-    pm[r,17] <- (data[[rn]]$Total[sc + data$freq*0.15] - data[[rn]]$Total[sc])/0.15
-    pm[r,18] <- (data[[rn]]$Total[sc + data$freq*0.20] - data[[rn]]$Total[sc])/0.20
+    # pm[r,15] <- (data[[rn]]$Total[sc + data$freq*0.05] - data[[rn]]$Total[sc])/0.05 # RFD 50 ms
+    # pm[r,16] <- (data[[rn]]$Total[sc + data$freq*0.10] - data[[rn]]$Total[sc])/0.10
+    # pm[r,17] <- (data[[rn]]$Total[sc + data$freq*0.15] - data[[rn]]$Total[sc])/0.15
+    # pm[r,18] <- (data[[rn]]$Total[sc + data$freq*0.20] - data[[rn]]$Total[sc])/0.20
+    pm[r,15] <- (data[[rn]]$Total[sp + data$freq*0.05] - data[[rn]]$Total[sp])/0.05 # RFD 50 ms
+    pm[r,16] <- (data[[rn]]$Total[sp + data$freq*0.10] - data[[rn]]$Total[sp])/0.10
+    pm[r,17] <- (data[[rn]]$Total[sp + data$freq*0.15] - data[[rn]]$Total[sp])/0.15
+    pm[r,18] <- (data[[rn]]$Total[sp + data$freq*0.20] - data[[rn]]$Total[sp])/0.20
     pm[r,19] <- (data[[rn]]$Total[pfi] - data[[rn]]$Total[mfi]) / (data[[rn]]$Time[pfi] - data[[rn]]$Time[mfi]) # RFD from min to max force
     
     pm[r,20] <- j[data$freq*0.05] # impulse at 50, 100, 150, 200 ms after start of concentric
